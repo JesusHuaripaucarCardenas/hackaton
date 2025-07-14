@@ -1,0 +1,363 @@
+<div class="ag-buttons-container" style="display: flex; align-items: center; gap: 10px;">
+  <input
+    type="text"
+    placeholder="Buscar..."
+    [(ngModel)]="textoFiltro"
+    (input)="filtrarPorTexto()"
+    class="ag-custom-input"
+    style="padding: 6px 10px; font-size: 14px;"
+  />
+
+  <button class="ag-custom-button" (click)="toggleFilter()">
+    Filtrar
+  </button>
+
+  <!-- ✅ Cambiado a abrirModalRegistro() -->
+  <button class="ag-custom-button" (click)="abrirModalRegistro()">
+    Agregar Registro
+  </button>
+
+  <!-- Dropdown de filtros -->
+  <div
+    class="filter-dropdown"
+    *ngIf="filterVisible"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="filter-group">
+      <label for="filterStatus">Estado</label>
+      <select
+        id="filterStatus"
+        [(ngModel)]="filterStatus"
+        name="filterStatus"
+      >
+        <option value="A">Activos</option>
+        <option value="I">Inactivos</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="sortOrder">Orden</label>
+      <select
+        id="sortOrder"
+        [(ngModel)]="sortOrder"
+        name="sortOrder"
+      >
+        <option value="asc">A - Z</option>
+        <option value="desc">Z - A</option>
+      </select>
+    </div>
+    <button class="ag-custom-button" (click)="applyFilter()">
+      Aplicar
+    </button>
+  </div>
+</div>
+
+<!-- ✅ MODAL DE REGISTRO -->
+<div
+  *ngIf="modalRegistroVisible"
+  id="registroModal"
+  class="modal"
+  (click)="cerrarDesdeFondoRegistro($event)"
+>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <span class="close" (click)="cerrarModalRegistro()">&times;</span>
+
+    <form id="registroForm" (ngSubmit)="registrar()" #form="ngForm">
+      <div class="form-container">
+        <h2>Registro de Estudiante</h2>
+
+        <!-- Ubicación -->
+        <div class="form-group-wide">
+          <label>Ubicación</label>
+          <div class="form-row-joined">
+            <div class="dual-input">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Departamento"
+                name="departamento"
+                [(ngModel)]="nuevoDept.nombre"
+              />
+            </div>
+            <div class="dual-input">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Provincia"
+                name="provincia"
+                [(ngModel)]="nuevoProvincia.nombre"
+              />
+            </div>
+            <div class="dual-input">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Distrito"
+                name="distrito"
+                [(ngModel)]="nuevoDistrito.nombre"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Programa Académico -->
+        <div class="form-group-wide">
+          <label>Programa Académico</label>
+          <div class="form-row-joined">
+            <div class="dual-input">
+              <input
+                type="text"
+                class="form-control"
+                placeholder="Programa Académico"
+                name="programa"
+                [(ngModel)]="nuevoPrograma.nombre"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Datos personales -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="numeroDocumento">Número Documento</label>
+            <input
+              type="number"
+              id="numeroDocumento"
+              class="form-control"
+              required
+              name="numeroDocumento"
+              [(ngModel)]="estudiante.numeroDocumento"
+            />
+          </div>
+          <div class="form-group">
+            <label for="nombreEstudiante">Nombre</label>
+            <input
+              type="text"
+              id="nombreEstudiante"
+              class="form-control"
+              required
+              name="nombreEstudiante"
+              [(ngModel)]="estudiante.nombre"
+            />
+          </div>
+          <div class="form-group">
+            <label for="apellido">Apellido</label>
+            <input
+              type="text"
+              id="apellido"
+              class="form-control"
+              required
+              name="apellido"
+              [(ngModel)]="estudiante.apellido"
+            />
+          </div>
+          <div class="form-group">
+            <label for="fechaNacimiento">Fecha de Nacimiento</label>
+            <input
+              type="date"
+              id="fechaNacimiento"
+              class="form-control"
+              required
+              name="fechaNacimiento"
+              [(ngModel)]="estudiante.fechaNacimiento"
+            />
+          </div>
+        </div>
+
+        <!-- Contacto -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              class="form-control"
+              required
+              name="email"
+              [(ngModel)]="estudiante.email"
+            />
+          </div>
+          <div class="form-group">
+            <label for="telefono">Teléfono</label>
+            <input
+              type="tel"
+              id="telefono"
+              class="form-control"
+              required
+              pattern="[0-9]{9}"
+              name="telefono"
+              [(ngModel)]="estudiante.telefono"
+            />
+          </div>
+          <div class="form-group" style="flex: 2">
+            <label for="direccion">Dirección</label>
+            <input
+              type="text"
+              id="direccion"
+              class="form-control"
+              required
+              name="direccion"
+              [(ngModel)]="estudiante.direccion"
+            />
+          </div>
+        </div>
+
+        <!-- Fecha inscripción -->
+        <div class="form-row">
+          <div class="form-group" style="flex: 1">
+            <label for="fechaInscripcion">Fecha de Inscripción</label>
+            <input
+              type="datetime-local"
+              id="fechaInscripcion"
+              class="form-control"
+              required
+              name="fechaInscripcion"
+              [(ngModel)]="estudiante.fechaInscripcion"
+              step="1"
+            />
+          </div>
+        </div>
+
+        <!-- Botón registrar -->
+        <div class="form-row" style="justify-content: center;">
+          <button
+            type="submit"
+            class="ag-custom-button"
+            [disabled]="form.invalid"
+          >
+            Registrar
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ✅ LISTADO -->
+<div class="estudiante-list-container">
+  <h2>Listado de Estudiantes</h2>
+
+  <div *ngIf="cargando">Cargando estudiantes...</div>
+
+  <table *ngIf="!cargando && estudiantes.length > 0" class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Número Documento</th>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Fecha de Nacimiento</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>Dirección</th>
+        <th>Fecha de Inscripción</th>
+        <th>Distrito</th>
+        <th>Programa Académico</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let estudiante of estudiantes">
+        <td>{{ estudiante.id }}</td>
+        <td>{{ estudiante.numeroDocumento }}</td>
+        <td>{{ estudiante.nombre }}</td>
+        <td>{{ estudiante.apellido }}</td>
+        <td>{{ estudiante.fechaNacimiento }}</td>
+        <td>{{ estudiante.email }}</td>
+        <td>{{ estudiante.telefono }}</td>
+        <td>{{ estudiante.direccion }}</td>
+        <td>{{ estudiante.fechaInscripcion }}</td>
+        <td>{{ getNombreDistrito(estudiante.idDistrito) }}</td>
+        <td>{{ getNombrePrograma(estudiante.idPrograma) }}</td>
+        <td>{{ estudiante.estado || 'A' }}</td>
+        <td>
+          <button *ngIf="estudiante.estado !== 'I'" (click)="abrirModalEditar(estudiante)">Editar</button>
+          <button *ngIf="estudiante.estado !== 'I'" (click)="desactivarEstudiante(estudiante.id!)">Eliminar</button>
+          <button *ngIf="estudiante.estado === 'I'" (click)="restaurarEstudiante(estudiante.id!)">Restaurar</button>
+          <button (click)="reportPdf(estudiante.id!)">📄 Generar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!cargando && estudiantes.length === 0">
+    No hay estudiantes registrados.
+  </div>
+</div>
+
+<!-- ✅ MODAL EDITAR -->
+<div class="modal-backdrop" *ngIf="modalEditarVisible" (click)="cerrarDesdeFondoEditar($event)">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3>Editar Estudiante</h3>
+
+    <form *ngIf="estudianteSeleccionado">
+      <label class="locked-field">
+        Número de Documento:
+        <div class="input-with-icon">
+          <input [(ngModel)]="estudianteSeleccionado.numeroDocumento" name="numeroDocumento" disabled />
+          <span class="lock-icon">🔒</span>
+        </div>
+      </label>
+
+      <label>
+        Nombre:
+        <input [(ngModel)]="estudianteSeleccionado.nombre" name="nombre" required />
+      </label>
+
+      <label>
+        Apellido:
+        <input [(ngModel)]="estudianteSeleccionado.apellido" name="apellido" required />
+      </label>
+
+      <label class="locked-field">
+        Fecha de Nacimiento:
+        <div class="input-with-icon">
+          <input [(ngModel)]="estudianteSeleccionado.fechaNacimiento" name="fechaNacimiento" type="date" disabled />
+          <span class="lock-icon">🔒</span>
+        </div>
+      </label>
+
+      <label>
+        Email:
+        <input [(ngModel)]="estudianteSeleccionado.email" name="email" type="email" required />
+      </label>
+
+      <label>
+        Teléfono:
+        <input [(ngModel)]="estudianteSeleccionado.telefono" name="telefono" required />
+      </label>
+
+      <label>
+        Dirección:
+        <input [(ngModel)]="estudianteSeleccionado.direccion" name="direccion" required />
+      </label>
+
+      <label class="locked-field">
+        Fecha de Inscripción:
+        <div class="input-with-icon">
+          <input [(ngModel)]="estudianteSeleccionado.fechaInscripcion" name="fechaInscripcion" type="date" disabled />
+          <span class="lock-icon">🔒</span>
+        </div>
+      </label>
+
+      <label>
+        Distrito:
+        <select [(ngModel)]="estudianteSeleccionado.idDistrito" name="idDistrito" required>
+          <option *ngFor="let d of distritos" [value]="d.id">{{ d.nombre }}</option>
+        </select>
+      </label>
+
+      <label>
+        Programa Académico:
+        <select [(ngModel)]="estudianteSeleccionado.idPrograma" name="idPrograma" required>
+          <option *ngFor="let p of programas" [value]="p.id">{{ p.nombre }}</option>
+        </select>
+      </label>
+
+      <div class="modal-buttons">
+        <button type="button" (click)="guardarCambios()">Guardar</button>
+        <button type="button" (click)="cerrarModalEditar()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,343 @@
+<div class="ag-buttons-container" style="display: flex; align-items: center; gap: 10px;">
+  <input type="text" placeholder="Buscar..." [(ngModel)]="textoFiltro" (input)="filtrarPorTexto()"
+    class="ag-custom-input" style="padding: 6px 10px; font-size: 14px;" />
+
+  <button class="ag-custom-button" (click)="toggleFilter()">
+    Filtrar
+  </button>
+
+
+  <button class="ag-custom-button" (click)="abrirModalRegistro()">
+    Agregar Registro
+  </button>
+
+
+  <div class="filter-dropdown" *ngIf="filterVisible" (click)="$event.stopPropagation()">
+    <div class="filter-group">
+      <label for="filterStatus">Estado</label>
+      <select id="filterStatus" [(ngModel)]="filterStatus" name="filterStatus">
+        <option value="A">Activos</option>
+        <option value="I">Inactivos</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="sortOrder">Orden</label>
+      <select id="sortOrder" [(ngModel)]="sortOrder" name="sortOrder">
+        <option value="asc">A - Z</option>
+        <option value="desc">Z - A</option>
+      </select>
+    </div>
+    <button class="ag-custom-button" (click)="applyFilter()">
+      Aplicar
+    </button>
+  </div>
+</div>
+
+
+<div *ngIf="modalRegistroVisible" id="registroModal" class="modal" (click)="cerrarDesdeFondoRegistro($event)">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <span class="close" (click)="cerrarModalRegistro()">&times;</span>
+
+    <form id="registroForm" (ngSubmit)="registrar()" #form="ngForm">
+      <div class="form-container">
+        <h2>Registro de Estudiante</h2>
+
+        <!-- UBICACIÓN -->
+        <div class="form-group-wide">
+          <label>Ubicación</label>
+          <div class="form-row-joined">
+            <div class="dual-input">
+              <input type="text" class="form-control" placeholder="Departamento" name="departamento"
+                [(ngModel)]="nuevoDept.nombre" #departamento="ngModel" required pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" />
+              <div *ngIf="departamento.invalid && (departamento.dirty || departamento.touched)" class="error-message">
+                Solo se permiten letras.
+              </div>
+            </div>
+            <div class="dual-input">
+              <input type="text" class="form-control" placeholder="Provincia" name="provincia"
+                [(ngModel)]="nuevoProvincia.nombre" #provincia="ngModel" required pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" />
+              <div *ngIf="provincia.invalid && (provincia.dirty || provincia.touched)" class="error-message">
+                Solo se permiten letras.
+              </div>
+            </div>
+            <div class="dual-input">
+              <input type="text" class="form-control" placeholder="Distrito" name="distrito"
+                [(ngModel)]="nuevoDistrito.nombre" #distrito="ngModel" required pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" />
+              <div *ngIf="distrito.invalid && (distrito.dirty || distrito.touched)" class="error-message">
+                Solo se permiten letras.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PROGRAMA -->
+        <div class="form-group-wide">
+          <label>Programa Académico</label>
+          <div class="form-row-joined">
+            <div class="dual-input">
+              <input type="text" class="form-control" placeholder="Programa Académico" name="programa"
+                [(ngModel)]="nuevoPrograma.nombre" #programa="ngModel" required pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" />
+              <div *ngIf="programa.invalid && (programa.dirty || programa.touched)" class="error-message">
+                Solo se permiten letras.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DATOS ESTUDIANTE -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="numeroDocumento">Número Documento</label>
+            <input type="text" id="numeroDocumento" class="form-control" required name="numeroDocumento"
+              [(ngModel)]="estudiante.numeroDocumento" #numeroDocumento="ngModel" pattern="^\d+$" />
+            <div *ngIf="numeroDocumento.invalid && (numeroDocumento.dirty || numeroDocumento.touched)"
+              class="error-message">
+              Solo se permiten números.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="nombreEstudiante">Nombre</label>
+            <input type="text" id="nombreEstudiante" class="form-control" required name="nombreEstudiante"
+              [(ngModel)]="estudiante.nombre" #nombreEstudiante="ngModel" pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" />
+            <div *ngIf="nombreEstudiante.invalid && (nombreEstudiante.dirty || nombreEstudiante.touched)"
+              class="error-message">
+              Solo se permiten letras.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="apellido">Apellido</label>
+            <input type="text" id="apellido" class="form-control" required name="apellido"
+              [(ngModel)]="estudiante.apellido" #apellido="ngModel" pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" />
+            <div *ngIf="apellido.invalid && (apellido.dirty || apellido.touched)" class="error-message">
+              Solo se permiten letras.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="fechaNacimiento">Fecha de Nacimiento</label>
+            <input type="date" id="fechaNacimiento" class="form-control" required name="fechaNacimiento"
+              [(ngModel)]="estudiante.fechaNacimiento" #fechaNacimiento="ngModel" />
+            <div *ngIf="fechaNacimiento.invalid && (fechaNacimiento.dirty || fechaNacimiento.touched)"
+              class="error-message">
+              Fecha inválida.
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" class="form-control" required name="email" [(ngModel)]="estudiante.email"
+              #email="ngModel" />
+            <div *ngIf="email.invalid && (email.dirty || email.touched)" class="error-message">
+              El correo es inválido.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="telefono">Teléfono</label>
+            <input type="tel" id="telefono" class="form-control" required pattern="^[0-9]{9}$" name="telefono"
+              [(ngModel)]="estudiante.telefono" #telefono="ngModel" />
+            <div *ngIf="telefono.invalid && (telefono.dirty || telefono.touched)" class="error-message">
+              El teléfono debe tener exactamente 9 dígitos.
+            </div>
+          </div>
+
+          <div class="form-group" style="flex: 2">
+            <label for="direccion">Dirección</label>
+            <input type="text" id="direccion" class="form-control" required name="direccion"
+              [(ngModel)]="estudiante.direccion" #direccion="ngModel" pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" />
+            <div *ngIf="direccion.invalid && (direccion.dirty || direccion.touched)" class="error-message">
+              Solo se permiten letras.
+            </div>
+          </div>
+        </div>
+
+        <!-- INSCRIPCIÓN -->
+        <div class="form-row">
+          <div class="form-group" style="flex: 1">
+            <label for="fechaInscripcion">Fecha de Inscripción</label>
+            <input type="datetime-local" id="fechaInscripcion" class="form-control" required name="fechaInscripcion"
+              [(ngModel)]="estudiante.fechaInscripcion" #fechaInscripcion="ngModel" step="1" />
+            <div *ngIf="fechaInscripcion.invalid && (fechaInscripcion.dirty || fechaInscripcion.touched)"
+              class="error-message">
+              Fecha inválida.
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row" style="justify-content: center;">
+          <button type="submit" class="ag-custom-button" [disabled]="form.invalid">
+            Registrar
+          </button>
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+
+<div class="estudiante-list-container">
+  <h2>Listado de Estudiantes</h2>
+
+  <div *ngIf="cargando">Cargando estudiantes...</div>
+
+  <table *ngIf="!cargando && estudiantes.length > 0" class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Número Documento</th>
+        <th>Nombre</th>
+        <th>Apellido</th>
+        <th>Fecha de Nacimiento</th>
+        <th>Email</th>
+        <th>Teléfono</th>
+        <th>Dirección</th>
+        <th>Fecha de Inscripción</th>
+        <th>Distrito</th>
+        <th>Programa Académico</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let estudiante of estudiantes">
+        <td>{{ estudiante.id }}</td>
+        <td>{{ estudiante.numeroDocumento }}</td>
+        <td>{{ estudiante.nombre }}</td>
+        <td>{{ estudiante.apellido }}</td>
+        <td>{{ estudiante.fechaNacimiento }}</td>
+        <td>{{ estudiante.email }}</td>
+        <td>{{ estudiante.telefono }}</td>
+        <td>{{ estudiante.direccion }}</td>
+        <td>{{ estudiante.fechaInscripcion }}</td>
+        <td>{{ getNombreDistrito(estudiante.idDistrito) }}</td>
+        <td>{{ getNombrePrograma(estudiante.idPrograma) }}</td>
+        <td>{{ estudiante.estado || 'A' }}</td>
+        <td>
+          <button *ngIf="estudiante.estado !== 'I'" (click)="abrirModalEditar(estudiante)">Editar</button>
+          <button *ngIf="estudiante.estado !== 'I'" (click)="desactivarEstudiante(estudiante.id!)">Eliminar</button>
+          <button *ngIf="estudiante.estado === 'I'" (click)="restaurarEstudiante(estudiante.id!)">Restaurar</button>
+          <button (click)="reportPdf(estudiante.id!)">📄 Generar</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!cargando && estudiantes.length === 0">
+    No hay estudiantes registrados.
+  </div>
+</div>
+
+
+<div class="modal-backdrop" *ngIf="modalEditarVisible" (click)="cerrarDesdeFondoEditar($event)">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <h3>Editar Estudiante</h3>
+
+    <form *ngIf="estudianteSeleccionado" #form="ngForm">
+
+      <label class="locked-field">
+        Número de Documento:
+        <div class="input-with-icon">
+          <input [(ngModel)]="estudianteSeleccionado.numeroDocumento" name="numeroDocumento" disabled />
+          <span class="lock-icon">🔒</span>
+        </div>
+      </label>
+
+
+      <label>
+        Nombre:
+        <input [(ngModel)]="estudianteSeleccionado.nombre" name="nombre" required pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" />
+        <div *ngIf="form.submitted && form.controls['nombre']?.invalid" class="error-message">
+          Solo se permiten letras.
+        </div>
+      </label>
+
+
+      <label>
+        Apellido:
+        <input [(ngModel)]="estudianteSeleccionado.apellido" name="apellido" required
+          pattern="[A-Za-zÁáÉéÍíÓóÚúÑñ\s]+" />
+        <div *ngIf="form.submitted && form.controls['apellido']?.invalid" class="error-message">
+          Solo se permiten letras.
+        </div>
+      </label>
+
+
+      <label class="locked-field">
+        Fecha de Nacimiento:
+        <div class="input-with-icon">
+          <input [(ngModel)]="estudianteSeleccionado.fechaNacimiento" name="fechaNacimiento" type="date" disabled />
+          <span class="lock-icon">🔒</span>
+        </div>
+      </label>
+
+
+      <label>
+        Email:
+        <input [(ngModel)]="estudianteSeleccionado.email" name="email" type="email" required />
+        <div *ngIf="form.submitted && form.controls['email']?.invalid" class="error-message">
+          El correo electrónico es inválido.
+        </div>
+      </label>
+
+
+      <label>
+        Teléfono:
+        <input [(ngModel)]="estudianteSeleccionado.telefono" name="telefono" required pattern="^[0-9]{9}$" />
+        <div *ngIf="form.submitted && form.controls['telefono']?.invalid" class="error-message">
+          El teléfono debe tener exactamente 9 dígitos.
+        </div>
+      </label>
+
+
+      <label>
+        Dirección:
+        <input [(ngModel)]="estudianteSeleccionado.direccion" name="direccion" required />
+        <div *ngIf="form.submitted && form.controls['direccion']?.invalid" class="error-message">
+          Este campo es obligatorio.
+        </div>
+      </label>
+
+
+      <label class="locked-field">
+        Fecha de Inscripción:
+        <div class="input-with-icon">
+          <input [(ngModel)]="estudianteSeleccionado.fechaInscripcion" name="fechaInscripcion" type="date" disabled />
+          <span class="lock-icon">🔒</span>
+        </div>
+      </label>
+
+
+      <label>
+        Distrito:
+        <select [(ngModel)]="estudianteSeleccionado.idDistrito" name="idDistrito" required>
+          <option *ngFor="let d of distritos" [value]="d.id">{{ d.nombre }}</option>
+        </select>
+        <div *ngIf="form.submitted && form.controls['idDistrito']?.invalid" class="error-message">
+          Este campo es obligatorio.
+        </div>
+      </label>
+
+
+      <label>
+        Programa Académico:
+        <select [(ngModel)]="estudianteSeleccionado.idPrograma" name="idPrograma" required>
+          <option *ngFor="let p of programas" [value]="p.id">{{ p.nombre }}</option>
+        </select>
+        <div *ngIf="form.submitted && form.controls['idPrograma']?.invalid" class="error-message">
+          Este campo es obligatorio.
+        </div>
+      </label>
+
+      <div class="modal-buttons">
+        <button type="submit" [disabled]="form.invalid" (click)="guardarCambios()">Guardar</button>
+        <button type="button" (click)="cerrarModalEditar()">Cancelar</button>
+      </div>
+    </form>
+
+  </div>
+</div>
